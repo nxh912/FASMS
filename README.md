@@ -3,17 +3,8 @@ Financial Assistance Scheme Management System
 
 ## Database tables
 
-* table: **schemes**
 
-| Name          | Type          | comment  |
-| ------------- |:-------------:| -----:|
-| **id**     |  UUID        | Primary Key |
-|  name      | VARCHAR(255) |NOT NULL     |
-| criteria   | VARCHAR(255) |NOT NULL     |
-| last_update| DATETIME     |systime      |
-
-
-* table: **applicants**
+* table: **Administrators**
 
 | Name          | Type          | comment  |
 | ------------- |:-------------:| -----:|
@@ -23,6 +14,38 @@ Financial Assistance Scheme Management System
 | sex        |VARCHAR(10) | NOT NULL |
 | date_of_birth | DATETIME | NOT NULL |
 | last_update| DATETIME     |systime  |
+
+
+* table: **Applicants**
+
+| Name          | Type          | comment  |
+| ------------- |:-------------:| -----:|
+| **id**     |  UUID        | Primary Key |
+|  name      | VARCHAR(255) |NOT NULL     |
+| employment_status | VARCHAR(255) |NOT NULL     |
+| sex        |VARCHAR(10) | NOT NULL |
+| date_of_birth | DATETIME | NOT NULL |
+| last_update| DATETIME     |systime  |
+
+* table: **Schemes**
+
+| Name          | Type          | comment  |
+| ------------- |:-------------:| -----:|
+| **id**     |  UUID        | Primary Key |
+|  name      | VARCHAR(255) |NOT NULL     |
+| criteria   | VARCHAR(255) |NOT NULL     |
+| last_update| DATETIME     |systime      |
+
+* table: **Applications**
+
+| Name          | Type          | comment       |
+| ------------- |:-------------:| -------------:|
+| **id**        |  UUID        | Primary Key    |
+| scheme_id     | UUID         |FD to Scheme    |
+| applicant_id  | UUID         |FD to Applicants|
+| last_update   | DATETIME     |systime         |
+
+
 
 * table: **household**
 
@@ -37,6 +60,7 @@ Financial Assistance Scheme Management System
 | last_update   | DATETIME    |systime   |
 
 
+
 * table: **benefits**
 
 | Name          | Type          | comment  |
@@ -47,15 +71,6 @@ Financial Assistance Scheme Management System
 | amount   | decimal(9) |NOT NULL     |
 | last_update| DATETIME     |systime      |
 
-
-* table: **schemes**
-
-| Name          | Type          | comment  |
-| ------------- |:-------------:| -----:|
-| **id**     |  UUID        | Primary Key |
-|  name      | VARCHAR(255) |NOT NULL     |
-| criteria   | VARCHAR(255) |NOT NULL     |
-| last_update| DATETIME     |systime      |
 
 ## Setup
 
