@@ -1,64 +1,32 @@
-from fastapi import FastAPI
-from db import create_db, get_dbconn
 import sqlite3
 import logging
+import uuid
+
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+from db import create_table, get_dbconn
+
 global log
 log = logging.getLogger(__name__)
 
 sqlite3_file = "FASMS.db"
 
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-from typing import Union
-
 from fastapi import FastAPI
-from pydantic import BaseModel
-class Item(BaseModel):
-    name: str
-    description: str | None = None
-    price: float
-    tax: float | None = None
 
 app = FastAPI()
-create_db( sqlite3_file)
+create_table( sqlite3_file)
 log.info("sample DB created")
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+### CREAT NEW
+@app.post("/api/applicants/{applicant_id}")
+async def create_applicant():
+    print("### ... create_applicant : {applicant_id}")
 
-
-@app.post("/items/")
-async def create_item(item: Item):
-    print("create_item : ", Item)
-    return item
-
-
-
-@app.post("/api/applicants")
-##async def create_person( applicant_id:int, name:str, employment_status:str, sex:str, date_of_birth: str, relation:str):
-async def create_person( applicant_id:int,  date_of_birth: str):
-    print("### ... create_person")
-    from UUID import uuid5
-
-    uuid = uuid5()
-    #    id UUID PRIMARY KEY,              -- Unique identifier for the household member
-    #    applicant_id UUID NOT NULL,       -- Foreign key to the applicants table
-    #    name VARCHAR(255) NOT NULL,       -- Household member's name
-    #    employment_status VARCHAR(50),    -- Employment status of household member
-    #    sex VARCHAR(10),                 -- Gender of household member
-    #    date_of_birth DATE,              -- Date of birth of the household member
-    #    relation VARCHAR(50),            -- Relation to th
-
-    return {"uuid": uuid}
-    assert(0)
+    id = uuid.uuid4()
     sql = f"""
-          INSERT INTO applicants( id, applicant_id, name, employment_status, sex, date_of_birth, relation)
-            VALUES(uuid,'{name}','{employment_status}','{sex}, '{date_of_birth}','{relation}');
+          INSERT INTO applicants( id, name, employment_status, sex, date_of_birth)
+            VALUES('{id}','name','employment_status','sex', 'date_of_birth');
         """
     print(f"SQL : {sql}")
     connection = dbconn = get_dbconn( 'FASMS.db')
@@ -68,13 +36,15 @@ async def create_person( applicant_id:int,  date_of_birth: str):
     connection.close()
     return {"create": "applicant"}
 
-@app.post("/api/application")
-def create_application():
-    return {"create": "application /api/application POST"}
+### CREAT NEW APPLICATOPM
+@app.post("/api/application/{applicant_id}")
+async def create_application(applicant_id):
+    
+    return {"create": "application", "applicant_id":applicant_id, "http": "POST"}
     # new applications
 
-@app.get("/api/applicants")
-def get_applicants():
+@app.get("/api/applicants") ######
+async def get_applicants():
     dbconn = get_dbconn( 'FASMS.db')
 
     log.info("DB connection : %s", str(dbconn))
@@ -114,11 +84,32 @@ def get_applicants():
         print(f"Error fetching sql: {sql}")
         return {"list": [1,2,3,4,5, f"Error fetching data: {error}" ]}
 
-@app.get("/api/schemes")
-def get_schemes():
-    return {"list": "schemes"}
+@app.get("/api/schemes") ######
+async def get_schemes():
+    dbconn = get_dbconn( 'FASMS.db')
+    cursor = dbconn.cursor()
+    sql = "SELECT * FROM schemes; "
+    appts = []
+
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+        # Print the table rows
+        for row in rows:
+            (id, name, criteria) = row
+            appts.append( {'uuid':id, 'name':name, 'criteria':criteria} )
+        print( "schemes : \n", appts )
+        dbconn.close()
+        return { 'schemes': appts }
+    except sqlite3.Error as error:
+        print(f"Error fetching data: {error}")
+        print(f"Error fetching sql: {sql}")
+        return {"list": [1,2,3,4,5, f"Error fetching data: {error}" ]}
+
+    return {"schemes": "None"}
 
 @app.get("/api/schemes/eligible")
-def get_schemes_eligible ():
+async def get_schemes_eligible ():
     assert( False)
 
