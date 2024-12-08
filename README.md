@@ -57,3 +57,9 @@ Financial Assistance Scheme Management System
 | criteria   | VARCHAR(255) |NOT NULL     |
 | last_update| DATETIME     |systime      |
 
+## Setup
+
+  1. ```sudu apt-get install curl```
+  1. ```pip3 install fastapi```
+  1. ```fastapi run fasms_api.py```
+     
