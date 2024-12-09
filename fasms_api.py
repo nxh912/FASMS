@@ -142,40 +142,42 @@ async def get_schemes( ):
 
 def find_schemes (ts):
     schemes=[]
-    print(ts)
-    uuid = ts['uuid']
-    name = ts['name']
-    emp = ts['emp']
+    print(f"ts : {ts}")
+    uuid, name, emp_status, sex, dob = ts
 
     print(f"\n\nFIND SCHEME ( '{uuid}' )")
     dbconn = get_dbconn( 'FASMS.db')
     cursor = dbconn.cursor()
 
+    ## get list of all schemes
     cursor.execute("SELECT * FROM Schemes")
     rows = cursor.fetchall()
+
+    potentials = []
+    ### scan all schemes
     for row in rows:
         [ _, scheme_name, marrital_status, emp_status, max_household ] = row
+        print(f"\n==> scheme_name = '{scheme_name}'" )
         eligible = True    # default
-        print(f"\n scheme_name = '{scheme_name}'" )
 
         # check marrital_status
         marrital_status_list = marrital_status.split("|")
-        print(f"[{scheme_name}] -> marrital_status={marrital_status_list}")
+        print(f"scheme [{scheme_name}] -> marrital_status={marrital_status_list}")
         if marrital_status not in marrital_status_list:
             eligible = False
-            break
+        else:
+            # check employment_status
+            eligible = True 
+            # check employnent status
+            emp_status_list = emp_status.split('|')
+            if emp_status not in emp_status_list:
+                eligible = False
+            else:
+                ## eligible after employment / marital status check
+                potentials.append(scheme_name)
 
-        # check employnent status
-        emp_status_list = emp_status.split('|')
-        if emp not in emp_status_list:
-            eligible = False
-            break
-
-        print(f"[{scheme_name}] -> max_household={max_household}" )
-        if eligible: schemes.append(scheme_name)
-            
     dbconn.close()
-    print("ELIGIBLE SCHEM(s) : ", schemes)
+    print("ELIGIBLE SCHEM(s) : ", potentials)
     return schemes
 
 @app.get("/api/schemes/eligible")
@@ -188,21 +190,20 @@ async def get_schemes_eligible (name):
     print(f"-- applicants_table( cursor, '{name}' )")
     appts = applicants_table( cursor, name)
 
-    print(191)
     if not appts:
         return { 'action':'get_schemes_eligible', 'applicants': [], 'debug_line':158 }
     else:
-        print(appts)
         assert(len(appts) > 0)
+        print("\n\n\nALL APPLICANTS : \n", appts)
         name_schemes = dict()
 
-        for ts in appts:
-            print(f"\n\n\n LINE 177 >>>>  {ts}")
-            uuid = ts['uuid']
-            name_schemes[ uuid ] = find_schemes(ts) # update return array
+        for (uuid, name, emp, sex, dob) in appts:
+            print(f"\n\n\nline 198 finding scheme >>>>  {(uuid, name, emp, sex, dob)}")
+            name_schemes[ uuid ] = find_schemes( (uuid, name, emp, sex, dob) ) # update return array
+
+            print(f"\n\nLINE 201... name_schemes[ {uuid} ] => {name_schemes[ uuid ] }\n\n")
         dbconn.close()
-        #appts = db.applicants_table(cursor)
-        #        cursor.close()name_scheme
+
         return {'action':'get_schemes_eligible',
                 'eligible_schemes': name_schemes,
                 'debug_line':172 }

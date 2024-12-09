@@ -97,25 +97,27 @@ def create_table(db_file):
     return True
 
 def applicants_table( cursor, name=None):
+    print(f" -- applicants_table( cursor, name='{name}')  ...")
     sql = "SELECT id, name, employment_status, sex, date_of_birth FROM applicants "
     if name: sql = sql + f" WHERE name LIKE '%{name}%' "
     appts = []
     print("db.py -> 103")
 
+    ### find list of applicats by searching the data table using the name
     try:
         cursor.execute(sql)
         rows = cursor.fetchall()
         # Print the table header
-        print(f"------------------------------")
+        print(f"--- exec query ---------------------------")
         appts=[]
         for row in rows:
             print( row )
             (uuid, name, emp, sex, bod) = row
             # ('01913b7a-4493-74b2-93f8-e684c4ca935c', 'James', 'unemployed', 'male', '1990-07-01')
-            appts.append( {'uuid':uuid, 'name':name, 'emp':emp, 'sex':sex} )
+            appts.append( (uuid, name, emp, sex, bod) )
 
     except sqlite3.Error as error:
         print(f"Error fetching data: {error}")
         print(f"Error fetching sql: {sql}")
-        return {"list": [1,2,3,4,5, f"Error fetching data: {error}" ]}
+        return {"error": f"Error fetching data: {error}"}
     return appts
