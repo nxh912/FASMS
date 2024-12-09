@@ -12,6 +12,7 @@ def create_db(dbfile):
         id UUID PRIMARY KEY,              -- Unique identifier for the applicant
         name VARCHAR(255) NOT NULL,        -- Applicant's name
         employment_status VARCHAR(50),     -- Employment status (e.g., unemployed)
+        marital_status VARCHAR(20),       -- 
         sex VARCHAR(10),                  -- Gender (e.g., male, female)
         date_of_birth DATE
     );
@@ -25,6 +26,7 @@ def create_db(dbfile):
         name VARCHAR(255) NOT NULL,       -- Household member's name
         employment_status VARCHAR(50),    -- Employment status of household member
         sex VARCHAR(10),                 -- Gender of household member
+        marrital_status VARCHAR(10),     -- Single /Married /Divorced
         date_of_birth DATE,              -- Date of birth of the household member
         relation VARCHAR(50),            -- Relation to the applicant (e.g., daughter, son)
         FOREIGN KEY (applicant_id) REFERENCES applicants(id) ON DELETE CASCADE  -- Ensures referential integrity

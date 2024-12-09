@@ -1,31 +1,18 @@
-import sqlite3
-import logging
-import uuid
-
+import sqlite3, uuid, inspect
+import db
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-
-from db import create_table, get_dbconn
-
-import inspect
+from db import create_table, get_dbconn, applicants_table
  
-def LINE():
-   '''Returns the current line number in our program'''
-   return inspect.currentframe().f_back.f_lineno
-
-global log
-log = logging.getLogger(__name__)
-
+def LINE(): return inspect.currentframe().f_back.f_lineno
+# Returns the current line number in our program'''
+   
 sqlite3_file = "FASMS.db"
-
-from fastapi import FastAPI
 
 app = FastAPI()
 create_table( sqlite3_file)
-log.info("sample DB created")
 
 def get_uuid(): return uuid.uuid4()
-
 
 ### CREATE NEW applicant
 @app.post("/api/applicants")
@@ -53,8 +40,7 @@ async def create_applicant(req: Request):
     cursor.execute( sql)
     connection.commit()
 
-    return {'Action':'Added', 'applicant':id, 'line':54}
-
+    return {'Action':'Added', 'applicant':id, 'debug_line':42}
 
     id = get_uuid()
     sql = f"""
@@ -73,16 +59,7 @@ async def create_applicant(req: Request):
 @app.post("/api/application")
 async def create_application(req: Request):
     body_dict = await req.json()
-    print("line74 [body_dict]  ==> ", body_dict)
 
-
-    '''
-Application
-| **id**        |  UUID        | Primary Key    |
-| scheme_id     | UUID         |FD to Scheme    |
-| applicant_id  | UUID         |FD to Applicants|
-| last_update   | DATETIME     |systime         |
-    '''
     valid = True
     for field in ['name', 'employment_status', 'sex', 'date_of_birth']:
         if field not in body_dict:
@@ -103,56 +80,39 @@ Application
     cursor.execute(sql)
     cursor.close()
     dbconn.close()
-    return {"result": "created", "applicant_id":id, "http": "POST"}
+    return {"result": "created", "applicant_id":id, "http": "POST", 'debug_line':82}
     # new applications
 
 ### LIST applicants
-@app.get("/api/applicants") ######
-async def get_applicants():
+@app.get("/api/applicants") # all applicates
+async def get_all_applicants():
     dbconn = get_dbconn( 'FASMS.db')
     
     print(f"/api/applicants : DB connection : {dbconn}")
 
-    '''
-        table = """CREATE TABLE applicants (
-        id UUID PRIMARY KEY,              -- Unique identifier for the applicant
-        name VARCHAR(255) NOT NULL,        -- Applicant's name
-        employment_status VARCHAR(50),     -- Employment status (e.g., unemployed)
-        sex VARCHAR(10),                  -- Gender (e.g., male, female)
-        household_id UUID                 -- forign key to household
-        date_of_birth DATE
-    );
-    '''
     cursor = dbconn.cursor()
-    sql = "SELECT * FROM applicants "
-    appts = []
+    appts = db.applicants_table(cursor)
+    
+    dbconn.close()
+    return { 'action':'get_applicants', 'applicants': appts, 'debug_line':113 }
 
-    try:
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-        # Print the table header
-        print(f"------------------------------")
-        #print(f"Content of table 'applicants':")
-        #print(*[column[0] for column in cursor.description], sep='\t')
+@app.get("/api/applicants/{name}")
+def get_applicants( name) :
+    dbconn = get_dbconn( 'FASMS.db')
+    
+    print(f"LINE 103 ... /api/applicants : Name:{name}, DB connection : {dbconn}")
 
-        # Print the table rows
-        appts=[]
-        for row in rows:
-            print( row )
-            (uuid, name, emp, sex, bod, address, _) = row
-            # ('01913b7a-4493-74b2-93f8-e684c4ca935c', 'James', 'unemployed', 'male', '1990-07-01')
-            appts.append( {'uuid':uuid, 'name':name, 'emp':emp, 'sex':sex, 'address':address} )
-        print("appts : ", appts)
-        #{"applicants": [1,2,3,4,5]}
-        dbconn.close()
-        return { 'applicants': appts }
-    except sqlite3.Error as error:
-        print(f"Error fetching data: {error}")
-        print(f"Error fetching sql: {sql}")
-        return {"list": [1,2,3,4,5, f"Error fetching data: {error}" ]}
+    cursor = dbconn.cursor()
+    appts = db.applicants_table(cursor, name=name)
+    
+    dbconn.close()
 
-@app.get("/api/schemes") ######
-async def get_schemes():
+    print(f"get_applicants( '{name}' ) :")
+    for appt in appts: print(appt)
+    return appts
+
+@app.get("/api/schemes") 
+async def get_schemes( ):
     dbconn = get_dbconn( 'FASMS.db')
     cursor = dbconn.cursor()
     sql = "SELECT name, marital_status, employment_status, household_number FROM schemes; "
@@ -171,15 +131,85 @@ async def get_schemes():
             all_schemes.append( scheme_item)
 
         dbconn.close()
-        return { 'schemes': all_schemes }
+        return {'action':'get_schemes', 'schemes': all_schemes, 'debug_line':139 }
     except sqlite3.Error as error:
         print(f"Error fetching data: {error}")
         print(f"Error fetching sql: {sql}")
-        return {"list": [1,2,3,4,5, f"Error fetching data: {error}" ]}
+        return {'action':'get_schemes', 'sql':sql, 'error': error, 'debug_line':143 }
 
     return {"schemes": "None"}
 
-@app.get("/api/schemes/eligible")
-async def get_schemes_eligible ():
-    assert( False)
 
+def find_schemes (ts):
+    schemes=[]
+    print(ts)
+    uuid = ts['uuid']
+    name = ts['name']
+    emp = ts['emp']
+
+    print(f"\n\nFIND SCHEME ( '{uuid}' )")
+    dbconn = get_dbconn( 'FASMS.db')
+    cursor = dbconn.cursor()
+
+    cursor.execute("SELECT * FROM Schemes")
+    rows = cursor.fetchall()
+    for row in rows:
+        [ _, scheme_name, marrital_status, emp_status, max_household ] = row
+        eligible = True    # default
+        print(f"\n scheme_name = '{scheme_name}'" )
+
+        # check marrital_status
+        marrital_status_list = marrital_status.split("|")
+        print(f"[{scheme_name}] -> marrital_status={marrital_status_list}")
+        if marrital_status not in marrital_status_list:
+            eligible = False
+            break
+
+        # check employnent status
+        emp_status_list = emp_status.split('|')
+        if emp not in emp_status_list:
+            eligible = False
+            break
+
+        print(f"[{scheme_name}] -> max_household={max_household}" )
+        if eligible: schemes.append(scheme_name)
+            
+    dbconn.close()
+    print("ELIGIBLE SCHEM(s) : ", schemes)
+    return schemes
+
+@app.get("/api/schemes/eligible")
+async def get_schemes_eligible (name):
+    print(f"-- get_schemes_eligible( '{name}' )")
+    dbconn = get_dbconn( 'FASMS.db')
+
+    cursor = dbconn.cursor()
+
+    print(f"-- applicants_table( cursor, '{name}' )")
+    appts = applicants_table( cursor, name)
+
+    print(191)
+    if not appts:
+        return { 'action':'get_schemes_eligible', 'applicants': [], 'debug_line':158 }
+    else:
+        print(appts)
+        assert(len(appts) > 0)
+        name_schemes = dict()
+
+        for ts in appts:
+            print(f"\n\n\n LINE 177 >>>>  {ts}")
+            uuid = ts['uuid']
+            name_schemes[ uuid ] = find_schemes(ts) # update return array
+        dbconn.close()
+        #appts = db.applicants_table(cursor)
+        #        cursor.close()name_scheme
+        return {'action':'get_schemes_eligible',
+                'eligible_schemes': name_schemes,
+                'debug_line':172 }
+
+'''   
+{"schemes":[
+  {"Scheme_Name":"Single Parent Scheme","Marital_Status":"Widowed|Divorced","Employment_Status":"Employed|Unemployed","Household Size":2},
+  {"Scheme_Name":"No Employment Family Scheme","Marital_Status":"Married","Employment_Status":"Unemployed","Household Size":2}
+  ]}
+'''
