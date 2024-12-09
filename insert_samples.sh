@@ -1,3 +1,5 @@
+import sqlite3, uuid, inspect
+def get_uuid(): return uuid.uuid4()
 
 #  "('01913b7a-4493-74b2-93f8-e684c4ca935c', 'James', 'unemployed', 'male', '1990-07-01'), 
 #  "('01913b80-2c04-7f9d-86a4-497ef68cb3a0', 'Mary', 'unemployed', 'female', '1984-10-06'); "    
@@ -40,14 +42,4 @@ curl --data '{"date_of_birth":"1984-10-06", "sex":"Female", "name":"Mary",  "emp
 
 
 
-### sqlite> CREATE TABLE IF NOT EXISTS  schemes ( id UUID PRIMARY KEY, name VARCHAR(255), marital_status VARCHAR(255), employment_status VARCHAR(255), household_number Int, last_update DATETIME DEFAULT CURRENT_TIMESTAMP);
-### sqlite> INSERT INTO schemes( name, marital_status, employment_status, household_number) VALUES ('Single Parent Scheme',     'Widowed|Divorced', 'Employed|Unemployed' , 2), ('No Employment Family Scheme','Married', 'Unemployed', 2);
 
-
-exit
-
-echo "  ----> MARY_UUID : ${MARY_ID}"
-
-########### applicants / GET
-printf "####\n#  GET applicants \n\n"
-curl "$ENDPOINT" 
