@@ -1,8 +1,16 @@
 # FASMS
 Financial Assistance Scheme Management System
 
-## Database tables
+## User Stories
 
+1. view all available financial assistance schemes.
+
+2. add new scheme applicants.
+
+3. view the schemes that an applicant is eligible to apply for.
+
+
+## Database tables
 
 * table: **Administrators**
 
