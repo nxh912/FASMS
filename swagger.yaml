@@ -1,66 +1,46 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
-  description: 'This is a sample server AdministratorsApplicants server.  You can find out more about Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).  For this sample, you can use the api key `special-key` to test the authorization filters.'
-  version: 1.0.7
-  title: Financial Assistance Scheme Management System
-  termsOfService: http://swagger.io/terms/
-  contact:
-    email: apiteam@swagger.io
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-host: AdministratorsApplicants.swagger.io
-basePath: /v2
-
+  title: Sample API
+  description: API description in Markdown.
+  version: 1.0.0
+host: api.example.com
+basePath: /v1
+schemes:
+  - https
 paths:
-  /Applicants/inventory:
+
+
+
+  /api/Application/:
     get:
       tags:
-        - Applicants
-      summary: Returns Administrators inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
+        - Applications
+      summary: Find purchase order by ID
+      description: For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+      operationId: getOrderById
       produces:
-        - application/json
-      parameters: []
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-      security:
-        - api_key: []
-  /Applicants/order:
-    post:
-      tags:
-        - Applicants
-      summary: Place an order for a Administrators
-      description: ''
-      operationId: placeOrder
-      consumes:
-        - application/json
-      produces:
-        - application/json
+        - application/json 
         - application/xml
       parameters:
-        - in: body
-          name: body
-          description: order placed for purchasing the Administrators
+        - name: orderId
+          in: path
+          description: ID of Administrators that needs to be fetched
           required: true
-          schema:
-            $ref: '#/definitions/Order'
+          type: integer
+          maximum: 10
+          minimum: 1
+          format: int64
       responses:
         '200':
           description: successful operation
           schema:
             $ref: '#/definitions/Order'
         '400':
-          description: Invalid Order
-  /Applicants/order/{orderId}:
-    get:
+          description: Invalid ID supplied
+        '404':
+          description: Order not found
+
+    post:
       tags:
         - Applicants
       summary: Find purchase order by ID
@@ -87,272 +67,40 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Order not found
-    delete:
+
+
+  /api/Applicants/:
+    get:
       tags:
         - Applicants
-      summary: Delete purchase order by ID
-      description: For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
-      operationId: deleteOrder
+      summary: Find purchase order by ID
+      description: For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+      operationId: getOrderById
       produces:
-        - application/json
+        - application/json 
         - application/xml
       parameters:
         - name: orderId
           in: path
-          description: ID of the order that needs to be deleted
+          description: ID of Administrators that needs to be fetched
           required: true
           type: integer
+          maximum: 10
           minimum: 1
           format: int64
       responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Order'
         '400':
           description: Invalid ID supplied
         '404':
           description: Order not found
-  /Applications/createWithList:
+
     post:
       tags:
-        - Applications
-      summary: Creates list of Applicationss with given input array
-      description: ''
-      operationId: createApplicationssWithListInput
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: List of Applications object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Applications'
-      responses:
-        default:
-          description: successful operation
-  /Applications/{Applicationsname}:
-    get:
-      tags:
-        - Applications
-      summary: Get Applications by Applications name
-      description: ''
-      operationId: getApplicationsByName
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - name: Applicationsname
-          in: path
-          description: 'The name that needs to be fetched. Use Applications1 for testing. '
-          required: true
-          type: string
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/Applications'
-        '400':
-          description: Invalid Applicationsname supplied
-        '404':
-          description: Applications not found
-    put:
-      tags:
-        - Applications
-      summary: Updated Applications
-      description: This can only be done by the logged in Applications.
-      operationId: updateApplications
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - name: Applicationsname
-          in: path
-          description: name that need to be updated
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: Updated Applications object
-          required: true
-          schema:
-            $ref: '#/definitions/Applications'
-      responses:
-        '400':
-          description: Invalid Applications supplied
-        '404':
-          description: Applications not found
-    delete:
-      tags:
-        - Applications
-      summary: Delete Applications
-      description: This can only be done by the logged in Applications.
-      operationId: deleteApplications
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - name: Applicationsname
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          type: string
-      responses:
-        '400':
-          description: Invalid Applicationsname supplied
-        '404':
-          description: Applications not found
-  /Applications/login:
-    get:
-      tags:
-        - Applications
-      summary: Logs Applications into the system
-      description: ''
-      operationId: loginApplications
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - name: Applicationsname
-          in: query
-          description: The Applications name for login
-          required: true
-          type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Expires-After:
-              type: string
-              format: date-time
-              description: date in UTC when token expires
-            X-Rate-Limit:
-              type: integer
-              format: int32
-              description: calls per hour allowed by the Applications
-          schema:
-            type: string
-        '400':
-          description: Invalid Applicationsname/password supplied
-  /Applications/logout:
-    get:
-      tags:
-        - Applications
-      summary: Logs out current logged in Applications session
-      description: ''
-      operationId: logoutApplications
-      produces:
-        - application/json
-        - application/xml
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  /Applications/createWithArray:
-    post:
-      tags:
-        - Applications
-      summary: Creates list of Applicationss with given input array
-      description: ''
-      operationId: createApplicationssWithArrayInput
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: List of Applications object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Applications'
-      responses:
-        default:
-          description: successful operation
-  /Applications:
-    post:
-      tags:
-        - Applications
-      summary: Create Applications
-      description: This can only be done by the logged in Applications.
-      operationId: createApplications
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: Created Applications object
-          required: true
-          schema:
-            $ref: '#/definitions/Applications'
-      responses:
-        default:
-          description: successful operation
-  /Schemes/inventory:
-    get:
-      tags:
-        - Schemes
-      summary: Returns Administrators inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      produces:
-        - application/json
-      parameters: []
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: object
-            additionalProperties:
-              type: integer
-              format: int32
-      security:
-        - api_key: []
-  /Schemes/order:
-    post:
-      tags:
-        - Schemes
-      summary: Place an order for a Administrators
-      description: ''
-      operationId: placeOrder
-      consumes:
-        - application/json
-      produces:
-        - application/json
-        - application/xml
-      parameters:
-        - in: body
-          name: body
-          description: order placed for purchasing the Administrators
-          required: true
-          schema:
-            $ref: '#/definitions/Order'
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            $ref: '#/definitions/Order'
-        '400':
-          description: Invalid Order
-  /Schemes/order/{orderId}:
-    get:
-      tags:
-        - Schemes
+        - Applicants
       summary: Find purchase order by ID
       description: For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
       operationId: getOrderById
@@ -377,26 +125,34 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Order not found
-    delete:
+
+
+  /api/Schemes/:
+    get:
       tags:
         - Schemes
-      summary: Delete purchase order by ID
-      description: For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
-      operationId: deleteOrder
+      summary: Find purchase order by ID
+      description: For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+      operationId: getOrderById
       produces:
-        - application/json
+        - application/json 
         - application/xml
       parameters:
         - name: orderId
           in: path
-          description: ID of the order that needs to be deleted
+          description: ID of Administrators that needs to be fetched
           required: true
           type: integer
+          maximum: 10
           minimum: 1
           format: int64
       responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Order'
         '400':
           description: Invalid ID supplied
         '404':
           description: Order not found
-  
+
