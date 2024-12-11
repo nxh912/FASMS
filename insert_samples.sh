@@ -1,5 +1,5 @@
-import sqlite3, uuid, inspect
-def get_uuid(): return uuid.uuid4()
+#import sqlite3, uuid, inspect
+#def get_uuid(): return uuid.uuid4()
 
 #  "('01913b7a-4493-74b2-93f8-e684c4ca935c', 'James', 'unemployed', 'male', '1990-07-01'), 
 #  "('01913b80-2c04-7f9d-86a4-497ef68cb3a0', 'Mary', 'unemployed', 'female', '1984-10-06'); "    

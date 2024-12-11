@@ -26,23 +26,22 @@ def create_table(db_file):
                        INSERT INTO household ( id,
                                                address,
                                                income)
-                       VALUES ( "{bishan_id}", "#08-09 Bishan St 64", 5000)  
+                       VALUES ( "{bishan_id}", "#08-09 Bishan St 64", 5000)  ;
                        ''')
 
-        cursor.execute("CREATE TABLE IF NOT EXISTS \
-                        schemes ( id UUID           PRIMARY KEY,\
-                                  Scheme_Name       VARCHAR(255), \
-                                  Marital_Status    VARCHAR(255), \
-                                  Employment_Status VARCHAR(255), \
-                                  Household_Size Int,             \
-                                  last_update DATETIME DEFAULT CURRENT_TIMESTAMP); ")
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS 
+                        schemes ( id UUID           PRIMARY KEY,
+                                  name              VARCHAR(255), 
+                                  marital_status    VARCHAR(255), 
+                                  employment_status VARCHAR(255), 
+                                  last_update DATETIME DEFAULT CURRENT_TIMESTAMP); ''')
         print("TABLE : schemes CREATED")
 
         # family scheme
-        cursor.execute("""INSERT INTO schemes( name, marital_status, employment_status, household_number) 
+        cursor.execute("""INSERT INTO schemes( name, marital_status, employment_status) 
             VALUES
-               ('Single Parent Scheme',       'Widowed|Divorced', 'Employed|Unemployed' , 2),
-               ('No Employment Family Scheme','Married',          'Unemployed',           2);
+               ('Single Parent Scheme',       'Widowed|Divorced', 'Employed|Unemployed'),
+               ('No Employment Family Scheme','Married',          'Unemployed');
         """)
 
         cursor.execute("""CREATE TABLE IF NOT EXISTS  household (
@@ -55,12 +54,8 @@ def create_table(db_file):
         );""")
         print("TABLE : household_person CREATED")
 
-
-
-
-
         cursor.execute("""CREATE TABLE IF NOT EXISTS  benefits (
-            id UUID PRIMARY KEY,
+            id UUID,
             scheme_id UUID PRIMARY KEY, 
             name VARCHAR(255) NOT NULL, 
             amount DECIMAL(10, 2) NOT NULL); 
@@ -68,28 +63,31 @@ def create_table(db_file):
         print("TABLE : benefits CREATED")
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS  applicants (
-                id UUID PRIMARY KEY,
-                name VARCHAR(255) PRIMARY KEY,
+                id UUID NOT NULL,
+                name VARCHAR(255),
                 employment_status VARCHAR(10),
                 sex VARCHAR(10),
-                date_of_birth DATETIME PRIMARY KEY,
+                date_of_birth DATETIME,
                 household_id UUID DEFAULT NULL,
-                last_update DATETIME DEFAULT CURRENT_TIMESTAMP
+                last_update DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY(name,date_of_birth)
         );''')
         print("TABLE : applicants CREATED")
 
         cursor.execute("""CREATE TABLE IF NOT EXISTS  applications (
-            id UUID PRIMARY KEY,
-            scheme_id UUID    PRIMARY KEY, 
-            applicant_id UUID PRIMARY KEY, 
-            last_update DATETIME DEFAULT CURRENT_TIMESTAMP
-                       )""")
+            id UUID,
+            scheme_id UUID, 
+            applicant_id UUID, 
+            last_update DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY(scheme_id, applicant_id)
+                       ); """)
         print("# TABLE : applications CREATED")
 
     except sqlite3.OperationalError as e:
         if "table applicants already exists" in str(e):
             print("Table already exists, skipping creation.")
         else:
+            print(e)
             raise e
 
     # Close the connection
